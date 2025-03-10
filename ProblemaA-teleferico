@@ -1,0 +1,12 @@
+<?php
+// Lendo a capacidade da cabine (C) e o número de alunos (A)
+$C = intval(fgets(STDIN));
+$A = intval(fgets(STDIN));
+
+// Calculando o número mínimo de viagens necessárias
+$maxAlunosPorViagem = $C - 1; // Sempre sobra 1 vaga para o monitor
+$viagens = ceil($A / $maxAlunosPorViagem); // Arredonda para cima
+
+// Exibindo o resultado
+echo $viagens . "\n";
+?>
