@@ -1,0 +1,11 @@
+<?php
+// Lê a nota conhecida (A) e a média (M) das duas provas
+$A = intval(fgets(STDIN));
+$M = intval(fgets(STDIN));
+
+// Calcula a nota esquecida (B)
+$B = (2 * $M) - $A;
+
+// Exibe o resultado
+echo $B . "\n";
+?>
