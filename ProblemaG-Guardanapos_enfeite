@@ -1,0 +1,53 @@
+<?php
+
+function calcularConfianca($enfeites, $ordem, $confianca) {
+    $confiancaTotal = 1;
+    for ($i = 0; $i < count($enfeites); $i++) {
+        $confiancaTotal *= $confianca[$enfeites[$i] - 1][$ordem[$i] - 1];
+    }
+    return $confiancaTotal;
+}
+
+function gerarPermutacoes($enfeites, $inicio, &$melhorOrdem, &$melhorConfianca, $confianca) {
+    if ($inicio == count($enfeites)) {
+        $confiancaAtual = calcularConfianca($enfeites, $enfeites, $confianca);
+        if ($confiancaAtual > $melhorConfianca) {
+            $melhorConfianca = $confiancaAtual;
+            $melhorOrdem = $enfeites;
+        }
+    } else {
+        for ($i = $inicio; $i < count($enfeites); $i++) {
+            $temp = $enfeites[$inicio];
+            $enfeites[$inicio] = $enfeites[$i];
+            $enfeites[$i] = $temp;
+
+            gerarPermutacoes($enfeites, $inicio + 1, $melhorOrdem, $melhorConfianca, $confianca);
+
+            $temp = $enfeites[$inicio];
+            $enfeites[$inicio] = $enfeites[$i];
+            $enfeites[$i] = $temp;
+        }
+    }
+}
+
+// Leitura da entrada
+$N = intval(fgets(STDIN));
+$confianca = [];
+for ($i = 0; $i < $N; $i++) {
+    $confianca[] = array_map('intval', explode(' ', trim(fgets(STDIN))));
+}
+
+// Gerar array de enfeites
+$enfeites = range(1, $N);
+
+// Inicialização da melhor ordem e confiança
+$melhorOrdem = [];
+$melhorConfianca = 0;
+
+// Gerar permutações e encontrar a melhor ordem
+gerarPermutacoes($enfeites, 0, $melhorOrdem, $melhorConfianca, $confianca);
+
+// Exibição da saída
+echo implode(' ', $melhorOrdem) . PHP_EOL;
+
+?>
