@@ -1,0 +1,103 @@
+<?php
+/**
+ * Função que implementa o algoritmo húngaro para resolução do problema de atribuição.
+ * Retorna um array $assignment, onde $assignment[i] é a coluna (posição) atribuída à linha i.
+ */
+function hungarian($cost) {
+    $n = count($cost);
+    $m = $n; // Matriz quadrada
+    $u = array_fill(0, $n+1, 0);
+    $v = array_fill(0, $m+1, 0);
+    $p = array_fill(0, $m+1, 0);
+    $way = array_fill(0, $m+1, 0);
+    
+    for ($i = 1; $i <= $n; $i++) {
+        $p[0] = $i;
+        $minv = array_fill(0, $m+1, INF);
+        $used = array_fill(0, $m+1, false);
+        $j0 = 0;
+        do {
+            $used[$j0] = true;
+            $i0 = $p[$j0];
+            $delta = INF;
+            $j1 = 0;
+            for ($j = 1; $j <= $m; $j++) {
+                if (!$used[$j]) {
+                    $cur = $cost[$i0 - 1][$j - 1] - $u[$i0] - $v[$j];
+                    if ($cur < $minv[$j]) {
+                        $minv[$j] = $cur;
+                        $way[$j] = $j0;
+                    }
+                    if ($minv[$j] < $delta) {
+                        $delta = $minv[$j];
+                        $j1 = $j;
+                    }
+                }
+            }
+            for ($j = 0; $j <= $m; $j++) {
+                if ($used[$j]) {
+                    $u[$p[$j]] += $delta;
+                    $v[$j] -= $delta;
+                } else {
+                    $minv[$j] -= $delta;
+                }
+            }
+            $j0 = $j1;
+        } while ($p[$j0] != 0);
+        do {
+            $j1 = $way[$j0];
+            $p[$j0] = $p[$j1];
+            $j0 = $j1;
+        } while ($j0);
+    }
+    $assignment = array_fill(0, $n, -1);
+    for ($j = 1; $j <= $m; $j++) {
+        if ($p[$j] != 0) {
+            $assignment[$p[$j] - 1] = $j - 1;
+        }
+    }
+    return $assignment;
+}
+
+// --- Leitura da entrada ---
+$handle = fopen("php://stdin", "r");
+$n = intval(trim(fgets($handle))); // Número de enfeites
+
+// Matriz de confiança: cada linha contém N inteiros entre 1 e 100.
+$matrix = [];
+for ($i = 0; $i < $n; $i++) {
+    $line = trim(fgets($handle));
+    $values = preg_split('/\s+/', $line);
+    $row = array_map('intval', $values);
+    $matrix[] = $row;
+}
+fclose($handle);
+
+// --- Preparação da matriz de custos ---
+// Queremos maximizar o produto de confiabilidades, ou seja, maximizar a soma dos logaritmos.
+// Definimos: custo[i][j] = -log(matrix[i][j])
+$costMatrix = [];
+for ($i = 0; $i < $n; $i++) {
+    $costRow = [];
+    for ($j = 0; $j < $n; $j++) {
+        // Usamos logaritmo natural (ln). Como os valores são inteiros positivos, log é definido.
+        $costRow[] = -log($matrix[$i][$j]);
+    }
+    $costMatrix[] = $costRow;
+}
+
+// --- Resolução do problema de atribuição com o algoritmo húngaro ---
+$assignment = hungarian($costMatrix);
+// Aqui, $assignment[i] é a posição (0-indexed) atribuída ao enfeite i (0-indexed).
+
+// --- Inverter a atribuição para obter a ordem de enfeites por posição ---
+// Precisamos criar um array $order onde $order[j] = i+1 indica que o enfeite i+1 deve ir para a posição j+1.
+$order = array_fill(0, $n, 0);
+for ($i = 0; $i < $n; $i++) {
+    $pos = $assignment[$i]; // posição para o enfeite i
+    $order[$pos] = $i + 1;   // enfeite (i+1) vai para a posição (pos+1)
+}
+
+// --- Impressão da ordem final ---
+echo implode(" ", $order) . "\n";
+?>
